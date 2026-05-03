@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* RightMouseHeldAction;
+
 public:
 
 	/** Constructor */
@@ -88,6 +91,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
+
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
+	bool bIsAimingNow = false;
+
+	UFUNCTION()
+	void OnAimStarted();
+
+	UFUNCTION()
+	void OnAimEnded();
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -95,5 +109,7 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	
 };
 

@@ -72,6 +72,24 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Looking
 		// EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
+
+		EnhancedInputComponent->BindAction(
+			RightMouseHeldAction,
+			ETriggerEvent::Started,
+			this,
+			&AMGP_2526Character::OnAimStarted
+		);
+
+		EnhancedInputComponent->BindAction(
+			RightMouseHeldAction,
+			ETriggerEvent::Completed,
+			this,
+			&AMGP_2526Character::OnAimEnded
+		);
+
+
+
+		
 	}
 	else
 	{
@@ -139,16 +157,29 @@ void AMGP_2526Character::DoJumpEnd()
 	StopJumping();
 }
 
-void AMGP_2526Character::Tick(float DeltaTime)
+void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif looking for solutions for why my character was looking right. it was an animation problem, not a code one. too lazy to change everything back since this works
 {
 	Super::Tick(DeltaTime);
 
 	if (Controller)
 	{
-		FRotator ControlRot = Controller->GetControlRotation();
-		ControlRot.Pitch = 0.f;
-		ControlRot.Roll = 0.f;
+		{
+			FRotator ControlRot = Controller->GetControlRotation();
+			ControlRot.Pitch = 0.f;
+			ControlRot.Roll = 0.f;
 
-		SetActorRotation(ControlRot);
+			SetActorRotation(ControlRot);
+		}
 	}
+}
+
+
+void AMGP_2526Character::OnAimStarted()
+{
+	bIsAimingNow = true;
+}
+
+void AMGP_2526Character::OnAimEnded()
+{
+	bIsAimingNow = false;
 }
