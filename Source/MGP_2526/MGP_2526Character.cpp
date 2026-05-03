@@ -36,11 +36,22 @@ AMGP_2526Character::AMGP_2526Character()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 
-	// Create a follow camera
+	// Create camera boom (spring arm)
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(GetCapsuleComponent());
+
+	CameraBoom->SocketOffset = FVector(73.f, 81.f, 85.f);
+
+	CameraBoom->TargetArmLength = 300.f;
+
+	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->bInheritPitch = true;
+	CameraBoom->bInheritYaw = true;
+	CameraBoom->bInheritRoll = false;
+
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(GetCapsuleComponent());
-	FollowCamera->SetRelativeLocation(FVector(0.f, 0.f, 64.f)); // eye height
-	FollowCamera->bUsePawnControlRotation = true;
+	FollowCamera->SetupAttachment(CameraBoom);
+	FollowCamera->bUsePawnControlRotation = false;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -126,4 +137,18 @@ void AMGP_2526Character::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AMGP_2526Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (Controller)
+	{
+		FRotator ControlRot = Controller->GetControlRotation();
+		ControlRot.Pitch = 0.f;
+		ControlRot.Roll = 0.f;
+
+		SetActorRotation(ControlRot);
+	}
 }
