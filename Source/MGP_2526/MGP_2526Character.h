@@ -60,7 +60,21 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* FireAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* DashAction;
 
+	FVector2D LastMovementInput = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool DashLeft = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool DashRight = false;
+
+	bool bCanDash = true; // cooldown for dash
+
+	FTimerHandle DashResetHandle;
+	FTimerHandle DashCooldownHandle; // timer ID's for later
 
 
 	// Projectile class
@@ -124,6 +138,9 @@ public:
 
 
 
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float DashStrength = 3000.f;
+
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
 	bool bIsAimingNow = false;
@@ -133,6 +150,9 @@ public:
 
 	UFUNCTION()
 	void OnAimEnded();
+
+	UFUNCTION()
+	void TryDash();
 
 public:
 

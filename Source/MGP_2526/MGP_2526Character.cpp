@@ -80,6 +80,8 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Started,this,&AMGP_2526Character::OnFire);
 
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMGP_2526Character::TryDash);
+
 
 
 		
@@ -94,6 +96,15 @@ void AMGP_2526Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	LastMovementInput = MovementVector; // storing for dash
+
+	if (bIsAimingNow)
+	{
+		return; // block WASD movement only while aiming, let dash happen
+	}
+
+
+	
 
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);
@@ -169,12 +180,15 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 
 void AMGP_2526Character::OnAimStarted()
 {
+
 	bIsAimingNow = true;
+	CameraBoom->TargetArmLength = 150.0f;
 }
 
 void AMGP_2526Character::OnAimEnded()
 {
 	bIsAimingNow = false;
+	CameraBoom->TargetArmLength = 300.f;
 }
 
 
@@ -229,4 +243,41 @@ void AMGP_2526Character::BeginPlay()
 
 		}
 	}
+}
+
+void AMGP_2526Character::TryDash()
+{
+	if (!bCanDash || !GetCharacterMovement()) return;
+
+	FVector DashDirection = FVector::ZeroVector;
+
+	DashLeft = false;
+	DashRight = false; // stop overlaps
+
+	// A = -1, D = +1 
+	if (LastMovementInput.X < 0.f)
+	{
+		DashDirection = -GetActorRightVector();
+		DashLeft = true;
+	}
+	else if (LastMovementInput.X > 0.f)
+	{
+		DashDirection = GetActorRightVector();
+		DashRight = true;
+	}
+	else
+	{
+		return; 
+	}
+
+
+	LaunchCharacter(DashDirection * DashStrength, true, true);
+
+	bCanDash = false;
+
+	// reset dash after 0.5s
+	GetWorldTimerManager().SetTimer(DashResetHandle,[this](){DashLeft = false;DashRight = false;},0.25f,false);
+
+	// cooldown
+	GetWorldTimerManager().SetTimer(DashCooldownHandle,[this](){bCanDash = true;},0.25f,false);
 }
