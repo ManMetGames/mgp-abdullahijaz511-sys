@@ -57,6 +57,7 @@ AMGP_2526Character::AMGP_2526Character()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+
 void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
@@ -180,6 +181,8 @@ void AMGP_2526Character::OnAimEnded()
 void AMGP_2526Character::OnFire()
 {
 
+	if (!bIsAimingNow) return;
+
 	UWorld* World = GetWorld();
 
 	// Get camera position + direction
@@ -210,3 +213,19 @@ void AMGP_2526Character::OnFire()
 	World->SpawnActor<AActor>(ProjectileClass,SpawnLocation,SpawnRotation);
 }
 	
+void AMGP_2526Character::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (ReticleWidgetClass)
+	{
+		ReticleWidget = CreateWidget<UUserWidget>(GetWorld(), ReticleWidgetClass);
+
+		if (ReticleWidget)
+		{
+			ReticleWidget->AddToViewport();
+			ReticleWidget->SetRenderScale(FVector2D(0.1f, 0.1f)); // cause it was huge
+
+		}
+	}
+}

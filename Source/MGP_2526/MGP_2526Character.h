@@ -1,9 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Blueprint/UserWidget.h"
 #include "Logging/LogMacros.h"
 #include "MGP_2526Character.generated.h"
 
@@ -76,6 +76,13 @@ protected:
 	void OnFire();
 
 
+	// crosshair
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> ReticleWidgetClass;
+
+	UUserWidget* ReticleWidget;
+
+
 public:
 
 	/** Constructor */
@@ -85,6 +92,8 @@ protected:
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void BeginPlay() override;
 
 protected:
 
