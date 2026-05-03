@@ -202,7 +202,8 @@ void AMGP_2526Character::OnFire()
 	FVector TargetPoint = bHit ? Hit.ImpactPoint : TraceEnd;
 
 	// Spawn slightly in front of character
-	FVector SpawnLocation = GetActorLocation() + CameraRotation.Vector() * 100.f; // should replace it with a socket on gus end
+	// FVector SpawnLocation = GetActorLocation() + CameraRotation.Vector() * 100.f; // should replace it with a socket on gus end
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle")); // bullet spawns at muzzle with this
 
 
 	// Rotate projectile toward target
