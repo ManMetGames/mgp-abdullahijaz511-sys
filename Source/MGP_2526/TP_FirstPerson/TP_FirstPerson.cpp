@@ -1,9 +1,0 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
-#include "MGP_2526.h"
-#include "TP_FirstPerson.h"
-#include "Modules/ModuleManager.h"
-
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, TP_FirstPerson, "TP_FirstPerson" );
-
-DEFINE_LOG_CATEGORY(LogTP_FirstPerson)
