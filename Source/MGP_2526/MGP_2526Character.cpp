@@ -73,19 +73,11 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Looking
 		// EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
 
-		EnhancedInputComponent->BindAction(
-			RightMouseHeldAction,
-			ETriggerEvent::Started,
-			this,
-			&AMGP_2526Character::OnAimStarted
-		);
+		EnhancedInputComponent->BindAction(RightMouseHeldAction,ETriggerEvent::Started,this,&AMGP_2526Character::OnAimStarted);
 
-		EnhancedInputComponent->BindAction(
-			RightMouseHeldAction,
-			ETriggerEvent::Completed,
-			this,
-			&AMGP_2526Character::OnAimEnded
-		);
+		EnhancedInputComponent->BindAction(RightMouseHeldAction,ETriggerEvent::Completed,this,&AMGP_2526Character::OnAimEnded);
+
+		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Started,this,&AMGP_2526Character::OnFire);
 
 
 
@@ -183,3 +175,38 @@ void AMGP_2526Character::OnAimEnded()
 {
 	bIsAimingNow = false;
 }
+
+
+void AMGP_2526Character::OnFire()
+{
+
+	UWorld* World = GetWorld();
+
+	// Get camera position + direction
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+
+	// Trace forward from camera
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * 10000.f);
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); // bullets kept clipping barrel end when i got too precise
+
+	bool bHit = World->LineTraceSingleByChannel(Hit,CameraLocation,TraceEnd,ECC_Visibility,Params);
+	FVector TargetPoint = bHit ? Hit.ImpactPoint : TraceEnd;
+
+	// Spawn slightly in front of character
+	FVector SpawnLocation = GetActorLocation() + CameraRotation.Vector() * 100.f; // should replace it with a socket on gus end
+
+
+	// Rotate projectile toward target
+	FVector Direction = (TargetPoint - SpawnLocation).GetSafeNormal();
+	FRotator SpawnRotation = Direction.Rotation();
+
+	// Spawn projectile
+	World->SpawnActor<AActor>(ProjectileClass,SpawnLocation,SpawnRotation);
+}
+	

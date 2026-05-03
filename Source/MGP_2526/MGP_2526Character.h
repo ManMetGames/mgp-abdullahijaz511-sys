@@ -52,8 +52,29 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	// aim input
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* RightMouseHeldAction;
+
+	// fire input
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* FireAction;
+
+
+
+
+	// Projectile class
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<AActor> ProjectileClass;
+
+	// Spawn offset
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FVector MuzzleOffset = FVector(100.f, 0.f, 50.f);
+
+	// Fire function
+	UFUNCTION()
+	void OnFire();
+
 
 public:
 
