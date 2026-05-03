@@ -123,6 +123,8 @@ public:
 
 
 
+
+
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
 	bool bIsAimingNow = false;
 

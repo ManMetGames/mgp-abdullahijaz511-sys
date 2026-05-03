@@ -203,7 +203,7 @@ void AMGP_2526Character::OnFire()
 
 	// Spawn slightly in front of character
 	// FVector SpawnLocation = GetActorLocation() + CameraRotation.Vector() * 100.f; // should replace it with a socket on gus end
-	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName("Muzzle")); // bullet spawns at muzzle with this
+	FVector SpawnLocation = GetMesh()->GetChildComponent(0)->GetSocketLocation(TEXT("Muzzle")); // bullet spawns at muzzle with this
 
 
 	// Rotate projectile toward target
@@ -225,7 +225,7 @@ void AMGP_2526Character::BeginPlay()
 		if (ReticleWidget)
 		{
 			ReticleWidget->AddToViewport();
-			ReticleWidget->SetRenderScale(FVector2D(0.1f, 0.1f)); // cause it was huge
+			ReticleWidget->SetRenderScale(FVector2D(0.05f, 0.05f)); // cause it was huge
 
 		}
 	}
