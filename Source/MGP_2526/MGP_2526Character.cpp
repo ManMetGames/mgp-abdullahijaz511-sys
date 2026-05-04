@@ -8,6 +8,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/Widget.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MGP_2526.h"
@@ -16,6 +18,8 @@ AMGP_2526Character::AMGP_2526Character()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -183,12 +187,17 @@ void AMGP_2526Character::OnAimStarted()
 
 	bIsAimingNow = true;
 	CameraBoom->TargetArmLength = 150.0f;
+
+	ReticleWidget->SetVisibility(ESlateVisibility::Visible); // show reticle when aiming
+
 }
 
 void AMGP_2526Character::OnAimEnded()
 {
 	bIsAimingNow = false;
 	CameraBoom->TargetArmLength = 300.f;
+	ReticleWidget->SetVisibility(ESlateVisibility::Hidden); // remove reticle when not aiming. or well, make it invisible
+
 }
 
 
@@ -241,13 +250,15 @@ void AMGP_2526Character::BeginPlay()
 			ReticleWidget->AddToViewport();
 			ReticleWidget->SetRenderScale(FVector2D(0.05f, 0.05f)); // cause it was huge
 
+			ReticleWidget->SetVisibility(ESlateVisibility::Hidden); // stay hiden when not aiming
+
 		}
 	}
 }
 
 void AMGP_2526Character::TryDash()
 {
-	if (!bCanDash || !GetCharacterMovement()) return;
+	if (!bCanDash || !GetCharacterMovement() || !bIsAimingNow) return; // make it so dash can't hapopen if dash cooldown isn't up and you'r not aiming
 
 	FVector DashDirection = FVector::ZeroVector;
 
@@ -276,8 +287,8 @@ void AMGP_2526Character::TryDash()
 	bCanDash = false;
 
 	// reset dash after 0.5s
-	GetWorldTimerManager().SetTimer(DashResetHandle,[this](){DashLeft = false;DashRight = false;},0.25f,false);
+	GetWorldTimerManager().SetTimer(DashResetHandle,[this](){DashLeft = false;DashRight = false;},0.4f,false);
 
 	// cooldown
-	GetWorldTimerManager().SetTimer(DashCooldownHandle,[this](){bCanDash = true;},0.25f,false);
+	GetWorldTimerManager().SetTimer(DashCooldownHandle,[this](){bCanDash = true;},0.4f,false);
 }

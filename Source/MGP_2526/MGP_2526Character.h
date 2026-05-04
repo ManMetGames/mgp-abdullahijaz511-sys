@@ -65,11 +65,7 @@ protected:
 
 	FVector2D LastMovementInput = FVector2D::ZeroVector;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Movement")
-	bool DashLeft = false;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Movement")
-	bool DashRight = false;
 
 	bool bCanDash = true; // cooldown for dash
 
@@ -144,6 +140,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
 	bool bIsAimingNow = false;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
+	bool DashLeft = false;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
+	bool DashRight = false;
 
 	UFUNCTION()
 	void OnAimStarted();
