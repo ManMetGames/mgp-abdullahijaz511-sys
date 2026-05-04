@@ -105,16 +105,20 @@ void AMGP_2526Character::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	LastMovementInput = MovementVector; // storing for dash
 
+	float Scale = 1.0f;
+
 	if (bIsAimingNow)
 	{
-		return; // block WASD movement only while aiming, let dash happen
+		if (GetCharacterMovement()->IsFalling()) {} // keep air momentum and air steering while aiming
+		
+		else
+		{
+			return; // still block ground movement while aiming 
+		}
 	}
 
-
-	
-
 	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
+	DoMove(MovementVector.X * Scale, MovementVector.Y * Scale);
 }
 
 void AMGP_2526Character::Look(const FInputActionValue& Value)
@@ -203,8 +207,8 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 		}
 	}
 
-	if (bInDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
-	if (bInDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
+	//if (bInDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
+	//if (bInDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
 
 }
 

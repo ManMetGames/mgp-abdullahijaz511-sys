@@ -65,6 +65,9 @@ protected:
 
 	FVector2D LastMovementInput = FVector2D::ZeroVector;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
+	float TimeMultiplier = 1.0;
+
 
 
 	bool bCanDash = true; // cooldown for dash
