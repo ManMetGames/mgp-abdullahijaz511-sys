@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
+#include "Components/BoxComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 #include "EnhancedInputSubsystems.h"
@@ -56,6 +57,8 @@ AMGP_2526Character::AMGP_2526Character()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom);
 	FollowCamera->bUsePawnControlRotation = false;
+
+
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -179,6 +182,30 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 			SetActorRotation(ControlRot);
 		}
 	}
+	
+	bInDodgeZone = false;
+
+	TArray<UPrimitiveComponent*> OverlappingComponents;
+	GetOverlappingComponents(OverlappingComponents);
+
+
+	for (UPrimitiveComponent* Comp : OverlappingComponents)
+	{
+		if (!Comp) continue;
+
+		if (UBoxComponent* Box = Cast<UBoxComponent>(Comp))
+		{
+			if (Box->ComponentHasTag(FName("DodgeZone")))
+			{
+				bInDodgeZone = true;
+				break;
+			}
+		}
+	}
+
+	if (bInDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
+	if (bInDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
+
 }
 
 
@@ -292,3 +319,4 @@ void AMGP_2526Character::TryDash()
 	// cooldown
 	GetWorldTimerManager().SetTimer(DashCooldownHandle,[this](){bCanDash = true;},0.4f,false);
 }
+
