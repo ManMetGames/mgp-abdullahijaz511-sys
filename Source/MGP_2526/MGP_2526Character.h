@@ -71,7 +71,7 @@ protected:
 
 
 	bool bCanDash = true; // cooldown for dash
-	bool bInDodgeZone = false;
+	bool bInLeftRightDodgeZone = false;
 
 	FTimerHandle DashResetHandle;
 	FTimerHandle DashCooldownHandle; // timer ID's for later

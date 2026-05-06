@@ -33,7 +33,7 @@ public:
 
 	// initial speed of the bullet
 	UPROPERTY(EditAnywhere, Category = "Combat")
-	float BulletSpeed = 2000.0f; 
+	float BulletSpeed = 1000.0f; 
 
 
 	UPROPERTY(EditAnywhere, Category = "Combat")

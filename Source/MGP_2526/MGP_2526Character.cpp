@@ -187,7 +187,7 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 		}
 	}
 	
-	bInDodgeZone = false;
+	bInLeftRightDodgeZone = false;
 
 	TArray<UPrimitiveComponent*> OverlappingComponents;
 	GetOverlappingComponents(OverlappingComponents);
@@ -199,16 +199,16 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 
 		if (UBoxComponent* Box = Cast<UBoxComponent>(Comp))
 		{
-			if (Box->ComponentHasTag(FName("DodgeZone")))
+			if (Box->ComponentHasTag(FName("LeftRightDodgeZone")))
 			{
-				bInDodgeZone = true;
+				bInLeftRightDodgeZone = true;
 				break;
 			}
 		}
 	}
 
-	//if (bInDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
-	//if (bInDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
+	//if (bInLeftRightDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
+	//if (bInLeftRightDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
 
 }
 
@@ -311,6 +311,21 @@ void AMGP_2526Character::TryDash()
 	{
 		return; 
 	}
+
+
+
+	if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Perfect Dodged!"));
+	}
+
+
+
+
+
+
+
+
 
 
 	LaunchCharacter(DashDirection * DashStrength, true, true);
