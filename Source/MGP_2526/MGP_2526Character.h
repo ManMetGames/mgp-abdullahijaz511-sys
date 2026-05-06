@@ -65,8 +65,6 @@ protected:
 
 	FVector2D LastMovementInput = FVector2D::ZeroVector;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
-	float TimeMultiplier = 1.0;
 
 
 
@@ -75,6 +73,7 @@ protected:
 
 	FTimerHandle DashResetHandle;
 	FTimerHandle DashCooldownHandle; // timer ID's for later
+	FTimerHandle PerfectDodgeTimerHandle;
 
 
 	// Projectile class
@@ -101,6 +100,11 @@ public:
 
 	/** Constructor */
 	AMGP_2526Character();	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
+	float TimeMultiplier = 1.0;
+
+	float slowTimeMultiplier = 0.2;
 
 protected:
 

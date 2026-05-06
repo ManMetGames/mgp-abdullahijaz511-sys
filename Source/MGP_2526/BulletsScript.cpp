@@ -2,11 +2,14 @@
 
 
 #include "BulletsScript.h"
+#include "MGP_2526Character.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
 
 // Sets default values
 ABulletsScript::ABulletsScript()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -21,7 +24,28 @@ void ABulletsScript::BeginPlay()
 // Called every frame
 void ABulletsScript::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
+
+
+    TimeMult = Cast<AMGP_2526Character>(GetWorld()->GetFirstPlayerController()->GetPawn())->TimeMultiplier; // get's speed of bullet every tick
+
+    // Check if multiplier changed
+    if (TimeMult != PrevTimeMult)
+    {
+        UProjectileMovementComponent* ProjectileComp = FindComponentByClass<UProjectileMovementComponent>();
+
+        if (ProjectileComp && PrevTimeMult != 0.0f)
+        {
+            // change current velocity
+            float Scale = TimeMult / PrevTimeMult;
+
+            ProjectileComp->Velocity *= Scale;
+        }
+
+        // Update previous multiplier
+        PrevTimeMult = TimeMult;
+    }
 
 }
+
 

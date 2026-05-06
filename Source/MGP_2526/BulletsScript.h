@@ -19,6 +19,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	float TimeMult= 1.0f;
+	float PrevTimeMult= 1.0f;
+	float scale;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

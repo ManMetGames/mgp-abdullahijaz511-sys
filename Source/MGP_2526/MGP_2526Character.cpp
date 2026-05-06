@@ -312,14 +312,29 @@ void AMGP_2526Character::TryDash()
 		return; 
 	}
 
-
-
-	if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
+	if (TimeMultiplier==1) // i only want the perfect dodge slowMo to happen when outside the sloMo
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Perfect Dodged!"));
+
+		if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Perfect Dodged!"));
+			TimeMultiplier = slowTimeMultiplier;
+
+
+
+
+		}
+
+
+
+
+
+
+		if (TimeMultiplier != 1){
+			GetWorldTimerManager().SetTimer(PerfectDodgeTimerHandle,[this](){TimeMultiplier = 1;},3.0f,false); // add a timed turn off for the 
+		}
+
 	}
-
-
 
 
 
