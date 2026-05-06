@@ -12,6 +12,10 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Engine/PostProcessVolume.h"
+#include "EngineUtils.h"
 #include "InputActionValue.h"
 #include "MGP_2526.h"
 
@@ -210,6 +214,24 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 	//if (bInLeftRightDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
 	//if (bInLeftRightDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
 
+	if (SlowMoVolume)
+	{
+		float TargetBlend = 0.0f;
+
+		if (TimeMultiplier == 1.0f)
+		{
+			TargetBlend = 0.0f;
+		}
+		else
+		{
+			TargetBlend = 1.0f;
+		}
+
+		const float InterpSpeed = 10.0f;
+
+		SlowMoVolume->BlendWeight = FMath::FInterpTo(SlowMoVolume->BlendWeight,TargetBlend,DeltaTime,InterpSpeed);
+	}
+
 }
 
 
@@ -272,7 +294,20 @@ void AMGP_2526Character::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (ReticleWidgetClass)
+	for (TActorIterator<APostProcessVolume> It(GetWorld()); It; ++It) // find the correct pp volume
+	{
+		APostProcessVolume* PPV = *It;
+
+		if (PPV && PPV->ActorHasTag(FName("slowMoVision")))
+		{
+			SlowMoVolume = PPV;
+			break;
+		}
+	}
+	
+
+
+	if (ReticleWidgetClass) // kept crashing before i added tis
 	{
 		ReticleWidget = CreateWidget<UUserWidget>(GetWorld(), ReticleWidgetClass);
 
@@ -312,17 +347,13 @@ void AMGP_2526Character::TryDash()
 		return; 
 	}
 
-	if (TimeMultiplier==1) // i only want the perfect dodge slowMo to happen when outside the sloMo
+	if (TimeMultiplier==1.0f) // i only want the perfect dodge slowMo to happen when outside the sloMo
 	{
 
 		if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Perfect Dodged!"));
 			TimeMultiplier = slowTimeMultiplier;
-
-
-
-
 		}
 
 

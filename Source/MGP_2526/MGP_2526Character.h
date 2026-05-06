@@ -66,6 +66,10 @@ protected:
 	FVector2D LastMovementInput = FVector2D::ZeroVector;
 
 
+	UPROPERTY()
+	APostProcessVolume* SlowMoVolume = nullptr; // kept crashing when i didn't set it to nullptr
+
+
 
 
 	bool bCanDash = true; // cooldown for dash
@@ -105,6 +109,9 @@ public:
 	float TimeMultiplier = 1.0;
 
 	float slowTimeMultiplier = 0.2;
+	
+	
+
 
 protected:
 
