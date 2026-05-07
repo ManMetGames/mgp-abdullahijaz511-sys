@@ -310,7 +310,13 @@ void AMGP_2526Character::OnFire()
 	FRotator SpawnRotation = Direction.Rotation();
 
 	// Spawn projectile
-	World->SpawnActor<AActor>(ProjectileClass,SpawnLocation,SpawnRotation);
+
+	if (TimeMultiplier == 1.0f) ////////////////////////////////////////////////////////////////////////////////// perfect dodge handler (other variables)
+	{
+		World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation);
+	}
+
+	else World->SpawnActor<AActor>(HeavyProjectileClass, SpawnLocation, SpawnRotation);
 }
 	
 void AMGP_2526Character::BeginPlay()

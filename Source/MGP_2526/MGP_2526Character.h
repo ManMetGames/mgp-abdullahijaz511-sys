@@ -84,6 +84,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<AActor> ProjectileClass;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<AActor> HeavyProjectileClass;
+
 	// Spawn offset
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	FVector MuzzleOffset = FVector(100.f, 0.f, 50.f);
