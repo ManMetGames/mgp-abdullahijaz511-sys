@@ -214,22 +214,45 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 	//if (bInLeftRightDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
 	//if (bInLeftRightDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
 
+	float TargetBlend = 0.0f;
+
+	if (TimeMultiplier == 1.0f) ////////////////////////////////////////////////////////////////////////////////// perfect dodge handler (other variables)
+	{
+		TargetBlend = 0.0f;
+
+		GetCharacterMovement()->JumpZVelocity = 500.f;
+		GetCharacterMovement()->AirControl = 0.35f;
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+		GetCharacterMovement()->GravityScale = 1.0f;
+
+
+	}
+	else
+	{
+		TargetBlend = 1.0f;
+
+		GetCharacterMovement()->JumpZVelocity = 350.f;
+		GetCharacterMovement()->AirControl = 0.28f;
+		GetCharacterMovement()->MaxWalkSpeed = 250.f;
+		GetCharacterMovement()->GravityScale = 0.5f;
+
+	}
+
+
+
+	GetMesh()->GlobalAnimRateScale = TimeMultiplier;
+
+
+
+
+
 	if (SlowMoVolume)
 	{
-		float TargetBlend = 0.0f;
+		
 
-		if (TimeMultiplier == 1.0f)
-		{
-			TargetBlend = 0.0f;
-		}
-		else
-		{
-			TargetBlend = 1.0f;
-		}
 
-		const float InterpSpeed = 10.0f;
 
-		SlowMoVolume->BlendWeight = FMath::FInterpTo(SlowMoVolume->BlendWeight,TargetBlend,DeltaTime,InterpSpeed);
+		SlowMoVolume->BlendWeight = TargetBlend;
 	}
 
 }
@@ -239,7 +262,7 @@ void AMGP_2526Character::OnAimStarted()
 {
 
 	bIsAimingNow = true;
-	CameraBoom->TargetArmLength = 150.0f;
+	CameraBoom->TargetArmLength = 200.0f;
 
 	ReticleWidget->SetVisibility(ESlateVisibility::Visible); // show reticle when aiming
 
@@ -320,6 +343,8 @@ void AMGP_2526Character::BeginPlay()
 
 		}
 	}
+
+
 }
 
 void AMGP_2526Character::TryDash()
@@ -348,11 +373,10 @@ void AMGP_2526Character::TryDash()
 	}
 
 	if (TimeMultiplier==1.0f) // i only want the perfect dodge slowMo to happen when outside the sloMo
-	{
+	{/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// perfect dodge handling//////////////////////////////////////////////////////////////////////////////////// 
 
 		if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Perfect Dodged!"));
 			TimeMultiplier = slowTimeMultiplier;
 		}
 

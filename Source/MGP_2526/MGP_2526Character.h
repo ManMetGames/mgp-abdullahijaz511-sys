@@ -109,6 +109,14 @@ public:
 	float TimeMultiplier = 1.0;
 
 	float slowTimeMultiplier = 0.2;
+
+
+	float modifiedAirControl;
+	float modifiedMaxWalkSpeed;
+	float modifiedGetCharacterMovement;
+
+
+	
 	
 	
 
