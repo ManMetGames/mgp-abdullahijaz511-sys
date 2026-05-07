@@ -192,10 +192,11 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 	}
 	
 	bInLeftRightDodgeZone = false;
+	bInUPDodgeZone = false;
 
 	TArray<UPrimitiveComponent*> OverlappingComponents;
 	GetOverlappingComponents(OverlappingComponents);
-
+	
 
 	for (UPrimitiveComponent* Comp : OverlappingComponents)
 	{
@@ -206,7 +207,16 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 			if (Box->ComponentHasTag(FName("LeftRightDodgeZone")))
 			{
 				bInLeftRightDodgeZone = true;
-				break;
+
+			}
+		}
+
+		if (UBoxComponent* Box = Cast<UBoxComponent>(Comp))
+		{
+			if (Box->ComponentHasTag(FName("UPdodgeZone")))
+			{
+				bInUPDodgeZone = true;
+
 			}
 		}
 	}
@@ -248,12 +258,21 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 
 	if (SlowMoVolume)
 	{
-		
-
-
-
 		SlowMoVolume->BlendWeight = TargetBlend;
 	}
+
+	const bool bJustStartedFalling =
+		GetCharacterMovement()->IsFalling() && !bWasFalling;
+
+	if (bJustStartedFalling && bInUPDodgeZone)
+	{
+		TimeMultiplier = slowTimeMultiplier;
+		GetWorldTimerManager().SetTimer(PerfectDodgeTimerHandle, [this]() {TimeMultiplier = 1; }, 3.0f, false);
+	}
+
+	bWasFalling = GetCharacterMovement()->IsFalling();
+
+
 
 }
 
@@ -311,7 +330,7 @@ void AMGP_2526Character::OnFire()
 
 	// Spawn projectile
 
-	if (TimeMultiplier == 1.0f) ////////////////////////////////////////////////////////////////////////////////// perfect dodge handler (other variables)
+	if (TimeMultiplier == 1.0f) // shoot weak bullets out of time slow and heavy in
 	{
 		World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation);
 	}
@@ -379,12 +398,15 @@ void AMGP_2526Character::TryDash()
 	}
 
 	if (TimeMultiplier==1.0f) // i only want the perfect dodge slowMo to happen when outside the sloMo
-	{/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// perfect dodge handling//////////////////////////////////////////////////////////////////////////////////// 
+	{/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// perfect dodge dash handling//////////////////////////////////////////////////////////////////////////////////// 
 
 		if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
 		{
 			TimeMultiplier = slowTimeMultiplier;
 		}
+
+
+
 
 
 

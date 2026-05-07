@@ -70,10 +70,10 @@ protected:
 	APostProcessVolume* SlowMoVolume = nullptr; // kept crashing when i didn't set it to nullptr
 
 
-
-
+	bool bWasFalling = false;
 	bool bCanDash = true; // cooldown for dash
 	bool bInLeftRightDodgeZone = false;
+	bool bInUPDodgeZone = false;
 
 	FTimerHandle DashResetHandle;
 	FTimerHandle DashCooldownHandle; // timer ID's for later

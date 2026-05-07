@@ -25,7 +25,7 @@ void ATurrentScript::BeginPlay()
 
 void ATurrentScript::Fire()
 {
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f; // where i want the bullet to spawn
+	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 300.0f; // where i want the bullet to spawn
 
 	FRotator SpawnRotation = GetActorRotation(); 
 
