@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "EnhancedInputComponent.h"
+#include "InputAction.h"
 #include "MGP_2526PlayerController.generated.h"
+
 
 class UInputMappingContext;
 class UUserWidget;
@@ -40,5 +43,6 @@ protected:
 
 	/** Input mapping context setup */
 	virtual void SetupInputComponent() override;
+
 
 };

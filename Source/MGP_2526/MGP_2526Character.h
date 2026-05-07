@@ -1,9 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Blueprint/UserWidget.h"
 #include "Logging/LogMacros.h"
 #include "MGP_2526Character.generated.h"
 
@@ -30,6 +30,9 @@ class AMGP_2526Character : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	virtual void Tick(float DeltaTime) override;
+
 	
 protected:
 
@@ -49,15 +52,84 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	// aim input
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* RightMouseHeldAction;
+
+	// fire input
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* DashAction;
+
+	FVector2D LastMovementInput = FVector2D::ZeroVector;
+
+
+	UPROPERTY()
+	APostProcessVolume* SlowMoVolume = nullptr; // kept crashing when i didn't set it to nullptr
+
+
+	bool bWasFalling = false;
+	bool bCanDash = true; // cooldown for dash
+	bool bInLeftRightDodgeZone = false;
+	bool bInUPDodgeZone = false;
+
+	FTimerHandle DashResetHandle;
+	FTimerHandle DashCooldownHandle; // timer ID's for later
+	FTimerHandle PerfectDodgeTimerHandle;
+
+
+	// Projectile class
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<AActor> HeavyProjectileClass;
+
+	// Spawn offset
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FVector MuzzleOffset = FVector(100.f, 0.f, 50.f);
+
+	// Fire function
+	UFUNCTION()
+	void OnFire();
+
+
+	// crosshair
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> ReticleWidgetClass;
+
+	UUserWidget* ReticleWidget;
+
+
 public:
 
 	/** Constructor */
 	AMGP_2526Character();	
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
+	float TimeMultiplier = 1.0;
+
+	float slowTimeMultiplier = 0.2;
+
+
+	float modifiedAirControl;
+	float modifiedMaxWalkSpeed;
+	float modifiedGetCharacterMovement;
+
+
+	
+	
+	
+
+
 protected:
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void BeginPlay() override;
 
 protected:
 
@@ -85,6 +157,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
+
+
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float DashStrength = 3000.f;
+
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
+	bool bIsAimingNow = false;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
+	bool DashLeft = false;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Animation")
+	bool DashRight = false;
+
+	UFUNCTION()
+	void OnAimStarted();
+
+	UFUNCTION()
+	void OnAimEnded();
+
+	UFUNCTION()
+	void TryDash();
+
+	
+
 public:
 
 	/** Returns CameraBoom subobject **/
@@ -92,5 +191,7 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	
 };
 

@@ -8,7 +8,14 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
+#include "Components/BoxComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/Widget.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Engine/PostProcessVolume.h"
+#include "EngineUtils.h"
 #include "InputActionValue.h"
 #include "MGP_2526.h"
 
@@ -16,14 +23,16 @@ AMGP_2526Character::AMGP_2526Character()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
@@ -35,20 +44,30 @@ AMGP_2526Character::AMGP_2526Character()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;
-	CameraBoom->bUsePawnControlRotation = true;
 
-	// Create a follow camera
+	// Create camera boom (spring arm)
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(GetCapsuleComponent());
+
+	CameraBoom->SocketOffset = FVector(73.f, 81.f, 85.f);
+
+	CameraBoom->TargetArmLength = 300.f;
+
+	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->bInheritPitch = true;
+	CameraBoom->bInheritYaw = true;
+	CameraBoom->bInheritRoll = false;
+
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->SetupAttachment(CameraBoom);
 	FollowCamera->bUsePawnControlRotation = false;
+
+
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
+
 
 void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -64,7 +83,19 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
 
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
+		// EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
+
+		EnhancedInputComponent->BindAction(RightMouseHeldAction,ETriggerEvent::Started,this,&AMGP_2526Character::OnAimStarted);
+
+		EnhancedInputComponent->BindAction(RightMouseHeldAction,ETriggerEvent::Completed,this,&AMGP_2526Character::OnAimEnded);
+
+		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Started,this,&AMGP_2526Character::OnFire);
+
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AMGP_2526Character::TryDash);
+
+
+
+		
 	}
 	else
 	{
@@ -76,9 +107,22 @@ void AMGP_2526Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	LastMovementInput = MovementVector; // storing for dash
+
+	float Scale = 1.0f;
+
+	if (bIsAimingNow)
+	{
+		if (GetCharacterMovement()->IsFalling()) {} // keep air momentum and air steering while aiming
+		
+		else
+		{
+			Scale = 0.2f; // still allow slow ground movement while aiming 
+		}
+	}
 
 	// route the input
-	DoMove(MovementVector.X, MovementVector.Y);
+	DoMove(MovementVector.X * Scale, MovementVector.Y * Scale);
 }
 
 void AMGP_2526Character::Look(const FInputActionValue& Value)
@@ -131,3 +175,265 @@ void AMGP_2526Character::DoJumpEnd()
 	// signal the character to stop jumping
 	StopJumping();
 }
+
+void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif looking for solutions for why my character was looking right. it was an animation problem, not a code one. too lazy to change everything back since this works
+{
+	Super::Tick(DeltaTime);
+
+	if (Controller)
+	{
+		{
+			FRotator ControlRot = Controller->GetControlRotation();
+			ControlRot.Pitch = 0.f;
+			ControlRot.Roll = 0.f;
+
+			SetActorRotation(ControlRot);
+		}
+	}
+	
+	bInLeftRightDodgeZone = false;
+	bInUPDodgeZone = false;
+
+	TArray<UPrimitiveComponent*> OverlappingComponents;
+	GetOverlappingComponents(OverlappingComponents);
+	
+
+	for (UPrimitiveComponent* Comp : OverlappingComponents)
+	{
+		if (!Comp) continue;
+
+		if (UBoxComponent* Box = Cast<UBoxComponent>(Comp))
+		{
+			if (Box->ComponentHasTag(FName("LeftRightDodgeZone")))
+			{
+				bInLeftRightDodgeZone = true;
+
+			}
+		}
+
+		if (UBoxComponent* Box = Cast<UBoxComponent>(Comp))
+		{
+			if (Box->ComponentHasTag(FName("UPdodgeZone")))
+			{
+				bInUPDodgeZone = true;
+
+			}
+		}
+	}
+
+	//if (bInLeftRightDodgeZone==false) UE_LOG(LogTemp, Warning, TEXT("Dodge miss"));
+	//if (bInLeftRightDodgeZone == true) UE_LOG(LogTemp, Warning, TEXT("Dodge"));
+
+	float TargetBlend = 0.0f;
+
+	if (TimeMultiplier == 1.0f) ////////////////////////////////////////////////////////////////////////////////// perfect dodge handler (other variables)
+	{
+		TargetBlend = 0.0f;
+
+		GetCharacterMovement()->JumpZVelocity = 500.f;
+		GetCharacterMovement()->AirControl = 0.35f;
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+		GetCharacterMovement()->GravityScale = 1.0f;
+
+
+	}
+	else
+	{
+		TargetBlend = 1.0f;
+
+		GetCharacterMovement()->JumpZVelocity = 350.f;
+		GetCharacterMovement()->AirControl = 0.28f;
+		GetCharacterMovement()->MaxWalkSpeed = 250.f;
+		GetCharacterMovement()->GravityScale = 0.5f;
+
+	}
+
+
+
+	GetMesh()->GlobalAnimRateScale = TimeMultiplier;
+
+
+
+
+
+	if (SlowMoVolume)
+	{
+		SlowMoVolume->BlendWeight = TargetBlend;
+	}
+
+	const bool bJustStartedFalling =
+		GetCharacterMovement()->IsFalling() && !bWasFalling;
+
+	if (bJustStartedFalling && bInUPDodgeZone)
+	{
+		TimeMultiplier = slowTimeMultiplier;
+		GetWorldTimerManager().SetTimer(PerfectDodgeTimerHandle, [this]() {TimeMultiplier = 1; }, 3.0f, false);
+	}
+
+	bWasFalling = GetCharacterMovement()->IsFalling();
+
+
+
+}
+
+
+void AMGP_2526Character::OnAimStarted()
+{
+
+	bIsAimingNow = true;
+	CameraBoom->TargetArmLength = 200.0f;
+
+	ReticleWidget->SetVisibility(ESlateVisibility::Visible); // show reticle when aiming
+
+}
+
+void AMGP_2526Character::OnAimEnded()
+{
+	bIsAimingNow = false;
+	CameraBoom->TargetArmLength = 300.f;
+	ReticleWidget->SetVisibility(ESlateVisibility::Hidden); // remove reticle when not aiming. or well, make it invisible
+
+}
+
+
+void AMGP_2526Character::OnFire()
+{
+
+	if (!bIsAimingNow) return;
+
+	UWorld* World = GetWorld();
+
+	// Get camera position + direction
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	Controller->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+
+	// Trace forward from camera
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * 10000.f);
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); // bullets kept clipping barrel end when i got too precise
+
+	bool bHit = World->LineTraceSingleByChannel(Hit,CameraLocation,TraceEnd,ECC_Visibility,Params);
+	FVector TargetPoint = bHit ? Hit.ImpactPoint : TraceEnd;
+
+	// Spawn slightly in front of character
+	// FVector SpawnLocation = GetActorLocation() + CameraRotation.Vector() * 100.f; // should replace it with a socket on gus end
+	FVector SpawnLocation = GetMesh()->GetChildComponent(0)->GetSocketLocation(TEXT("Muzzle")); // bullet spawns at muzzle with this
+
+
+	// Rotate projectile toward target
+	FVector Direction = (TargetPoint - SpawnLocation).GetSafeNormal();
+	FRotator SpawnRotation = Direction.Rotation();
+
+	// Spawn projectile
+
+	if (TimeMultiplier == 1.0f) // shoot weak bullets out of time slow and heavy in
+	{
+		World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation);
+	}
+
+	else World->SpawnActor<AActor>(HeavyProjectileClass, SpawnLocation, SpawnRotation);
+}
+	
+void AMGP_2526Character::BeginPlay()
+{
+	Super::BeginPlay();
+
+	for (TActorIterator<APostProcessVolume> It(GetWorld()); It; ++It) // find the correct pp volume
+	{
+		APostProcessVolume* PPV = *It;
+
+		if (PPV && PPV->ActorHasTag(FName("slowMoVision")))
+		{
+			SlowMoVolume = PPV;
+			break;
+		}
+	}
+	
+
+
+	if (ReticleWidgetClass) // kept crashing before i added tis
+	{
+		ReticleWidget = CreateWidget<UUserWidget>(GetWorld(), ReticleWidgetClass);
+
+		if (ReticleWidget)
+		{
+			ReticleWidget->AddToViewport();
+			ReticleWidget->SetRenderScale(FVector2D(0.05f, 0.05f)); // cause it was huge
+
+			ReticleWidget->SetVisibility(ESlateVisibility::Hidden); // stay hiden when not aiming
+
+		}
+	}
+
+
+}
+
+void AMGP_2526Character::TryDash()
+{
+	if (!bCanDash || !GetCharacterMovement() || !bIsAimingNow) return; // make it so dash can't hapopen if dash cooldown isn't up and you'r not aiming
+
+	FVector DashDirection = FVector::ZeroVector;
+
+	DashLeft = false;
+	DashRight = false; // stop overlaps
+
+	// A = -1, D = +1 
+	if (LastMovementInput.X < 0.f)
+	{
+		DashDirection = -GetActorRightVector();
+		DashLeft = true;
+	}
+	else if (LastMovementInput.X > 0.f)
+	{
+		DashDirection = GetActorRightVector();
+		DashRight = true;
+	}
+	else
+	{
+		return; 
+	}
+
+	if (TimeMultiplier==1.0f) // i only want the perfect dodge slowMo to happen when outside the sloMo
+	{/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// perfect dodge dash handling//////////////////////////////////////////////////////////////////////////////////// 
+
+		if (bInLeftRightDodgeZone == true && (DashRight == true || DashLeft == true)) // check if the player is in the left/right dodge zone and dodges left or right
+		{
+			TimeMultiplier = slowTimeMultiplier;
+		}
+
+
+
+
+
+
+
+
+
+		if (TimeMultiplier != 1){
+			GetWorldTimerManager().SetTimer(PerfectDodgeTimerHandle,[this](){TimeMultiplier = 1;},3.0f,false); // add a timed turn off for the 
+		}
+
+	}
+
+
+
+
+
+
+
+
+	LaunchCharacter(DashDirection * DashStrength, true, true);
+
+	bCanDash = false;
+
+	// reset dash after 0.5s
+	GetWorldTimerManager().SetTimer(DashResetHandle,[this](){DashLeft = false;DashRight = false;},0.4f,false);
+
+	// cooldown
+	GetWorldTimerManager().SetTimer(DashCooldownHandle,[this](){bCanDash = true;},0.4f,false);
+}
+
