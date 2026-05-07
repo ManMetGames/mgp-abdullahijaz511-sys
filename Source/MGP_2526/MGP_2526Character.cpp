@@ -117,7 +117,7 @@ void AMGP_2526Character::Move(const FInputActionValue& Value)
 		
 		else
 		{
-			return; // still block ground movement while aiming 
+			Scale = 0.2f; // still allow slow ground movement while aiming 
 		}
 	}
 
