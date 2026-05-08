@@ -1,46 +1,69 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/eHp3Q3e9)
-# MGP_2526
- The assessment repo for 2526
+# To Download and Start Project
 
-
--------------start here---------------
-
-To download and start project:
 1. Download the latest GitHub repository from the project repo.
-2. In the repo folder generate the visual studio project files of the MGP_2526.uproject
-3. Once the visual studio project files are loaded open MGP_2526.uproject with Unreal 5.6.1
+2. In the repo folder, generate the Visual Studio project files for `MGP_2526.uproject`.
+3. Once the Visual Studio project files are loaded, open `MGP_2526.uproject` with Unreal Engine `5.6.1`.
+4. Click **Yes** to any prompts to build the project.
 
-Materials and assets used:
-- Default unreal 5.6.1 3rd person assets (by Epic)
-- Unreal starter animation pack (by Epic)
-- Model 12 pump action shotgun (by the 9th Earl - Fab store) (used for reference)
-- shotgun (by styloo - Fab store)
+---
 
+# Materials and Assets Used
 
-Controls and instructions:
+- Default Unreal Engine `5.6.1` Third Person assets (by Epic)
+- Unreal Starter Animation Pack (by Epic)
+- Model 12 Pump Action Shotgun (by the 9th Earl - Fab Store) *(used for reference)*
+- Shotgun (by styloo - Fab Store)
 
-Default controls (without pressing any other button):
+---
 
-- WASD: Forward-Left-Back-Right (from currently looking direction)
-- Space: Jump
-- Mouse movement: Camera direction (looking direction)
-- Right mouse button (hold): Aim gun
+# Controls and Instructions
 
-Aimed controls (controls while aiming):
+## Default Controls  
+*(without pressing any other button)*
 
-- Left mouse button (tap): Fire bullet
-- A + Left Shift: Dash left
-- D + Left Shift: Dash right
-- Space: Jump
+| Control | Action |
+|---|---|
+| `WASD` | Forward / Left / Back / Right *(relative to current looking direction)* |
+| `Space` | Jump |
+| `Mouse Movement` | Camera direction *(looking direction)* |
+| `Right Mouse Button (Hold)` | Aim gun |
 
-Perfect dodge mechanic:
+---
+
+## Aimed Controls  
+*(controls while aiming)*
+
+| Control | Action |
+|---|---|
+| `Left Mouse Button (Tap)` | Fire bullet |
+| `A + Left Shift` | Dash left |
+| `D + Left Shift` | Dash right |
+| `Space` | Jump |
+
+---
+
+# Perfect Dodge Mechanic
 
 - Doing certain actions just before getting hit by a bullet will enable slow motion.
-- The arrows above the bullets shows what you have to do
-	- Left/Right arrow above bullet means dash left or right relative to the bullet
-	- Up arrow means jump just before getting hit
-- During slow motion your bullets "deal" more damage to the turrents
-- You can destroy bullets that require a left/right dodge
+- The arrows above the bullets show what you have to do:
+  - **Left/Right arrow** above bullet → Dash left or right relative to the bullet
+  - **Up arrow** → Jump just before getting hit
+- During slow motion, your bullets "deal" more damage to the turrets.
+- You can destroy bullets that require a left/right dodge.
 
+---
 
-Link to video: https://mmutube.mmu.ac.uk/media/Game+Mechanics+project/1_2jwtzpy3
+# Video
+
+Video Link:  
+https://mmutube.mmu.ac.uk/media/Game+Mechanics+project/1_2jwtzpy3
+
+---
+
+# Repository Information
+
+This repository was developed as part of the coursework for:
+
+**Mechanics and Gameplay 2025/26**  
+Assessment ID: `1CWK100`  
+Manchester Metropolitan University
