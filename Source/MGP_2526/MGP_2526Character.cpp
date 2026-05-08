@@ -292,8 +292,10 @@ void AMGP_2526Character::OnAimStarted()
 
 	bIsAimingNow = true;
 	CameraBoom->TargetArmLength = 200.0f;
-
-	ReticleWidget->SetVisibility(ESlateVisibility::Visible); // show reticle when aiming
+	if (ReticleWidget)
+	{
+		ReticleWidget->SetVisibility(ESlateVisibility::Visible); // show reticle when aiming
+	} else UE_LOG(LogTemp, Warning, TEXT("Widget issue"));
 
 }
 
@@ -301,7 +303,10 @@ void AMGP_2526Character::OnAimEnded()
 {
 	bIsAimingNow = false;
 	CameraBoom->TargetArmLength = 300.f;
+	if (ReticleWidget)
+	{
 	ReticleWidget->SetVisibility(ESlateVisibility::Hidden); // remove reticle when not aiming. or well, make it invisible
+	} else UE_LOG(LogTemp, Warning, TEXT("Widget issue"));
 
 }
 

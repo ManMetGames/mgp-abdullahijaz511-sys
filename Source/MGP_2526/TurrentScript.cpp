@@ -27,16 +27,33 @@ void ATurrentScript::Fire()
 {
 	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 300.0f; // where i want the bullet to spawn
 
-	FRotator SpawnRotation = GetActorRotation(); 
+	FRotator SpawnRotation = GetActorRotation(); // make projectile face same direction as turret so it shoots forward
 
 	FActorSpawnParameters SpawnParams; 
 	// spawn the bullet from the parameters i just got from above
+	if (!BulletClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Bullet class issue in turrent"));
+		return;
+	}
+
 	AActor* Bullet = GetWorld()->SpawnActor<AActor>(BulletClass,SpawnLocation,SpawnRotation,SpawnParams);
+	if (!Bullet)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AAactor Bullet issue in turrent"));
+		return;
+	}
 
 
 	UProjectileMovementComponent* ProjectileComp = Bullet->FindComponentByClass<UProjectileMovementComponent>();
 
-	ProjectileComp->Velocity = GetActorForwardVector() * BulletSpeed;
+	if (!ProjectileComp)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ProjectileComp issue in turrent"));
+		return;
+	}
+
+	ProjectileComp->Velocity = GetActorForwardVector() * BulletSpeed;  // manually push projectile forward since initial velocity is iffy on the initial push, sometimes simply staying there
 
 	ProjectileComp->InitialSpeed = BulletSpeed;
 	ProjectileComp->MaxSpeed = BulletSpeed;
