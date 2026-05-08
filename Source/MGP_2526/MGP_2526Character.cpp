@@ -274,7 +274,7 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 	const bool bJustStartedFalling =
 		GetCharacterMovement()->IsFalling() && !bWasFalling;
 
-	if (bJustStartedFalling && bInUPDodgeZone)
+	if (bJustStartedFalling && bInUPDodgeZone && !bIsDashing)
 	{
 		TimeMultiplier = slowTimeMultiplier;
 		GetWorldTimerManager().SetTimer(PerfectDodgeTimerHandle, [this]() {TimeMultiplier = 1; }, 3.0f, false);
@@ -332,7 +332,16 @@ void AMGP_2526Character::OnFire()
 	Params.AddIgnoredActor(this); // bullets kept clipping barrel end when i got too precise
 
 	bool bHit = World->LineTraceSingleByChannel(Hit,CameraLocation,TraceEnd,ECC_Visibility,Params);
-	FVector TargetPoint = bHit ? Hit.ImpactPoint : TraceEnd;
+	FVector TargetPoint;
+
+	if (bHit)
+	{
+		TargetPoint = Hit.ImpactPoint;
+	}
+	else
+	{
+		TargetPoint = TraceEnd;
+	}
 
 	// Spawn slightly in front of character
 	// FVector SpawnLocation = GetActorLocation() + CameraRotation.Vector() * 100.f; // should replace it with a socket on gus end
@@ -438,7 +447,7 @@ void AMGP_2526Character::TryDash()
 
 
 
-
+	bIsDashing = true;
 
 
 	LaunchCharacter(DashDirection * DashStrength, true, true);
@@ -446,7 +455,7 @@ void AMGP_2526Character::TryDash()
 	bCanDash = false;
 
 	// reset dash after 0.5s
-	GetWorldTimerManager().SetTimer(DashResetHandle,[this](){DashLeft = false;DashRight = false;},0.4f,false);
+	GetWorldTimerManager().SetTimer(DashResetHandle, [this](){DashLeft = false;DashRight = false;bIsDashing = false;}, 0.4f, false);
 
 	// cooldown
 	GetWorldTimerManager().SetTimer(DashCooldownHandle,[this](){bCanDash = true;},0.4f,false);
