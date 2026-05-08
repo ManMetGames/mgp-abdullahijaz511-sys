@@ -204,7 +204,17 @@ void AMGP_2526Character::Tick(float DeltaTime) // i did this after a while oif l
 
 		if (UBoxComponent* Box = Cast<UBoxComponent>(Comp))
 		{
-			if (Box->ComponentHasTag(FName("LeftRightDodgeZone")))
+			FVector ToBox = Box->GetComponentLocation() - GetActorLocation(); // quickly get the direction from the char to the box collidor that is the dodge zone (presumably)
+			ToBox.Z = 0.0f; // needed to make sure hitbox above or below doesn't affect it
+
+			ToBox.Normalize();
+			float ForwardDot = FVector::DotProduct(GetActorForwardVector(), ToBox); // compare against forward vector of the character
+
+			bool bFrontOrBehind = FMath::Abs(ForwardDot) > 0.7f; // rooughly in front or behind
+
+
+
+			if (Box->ComponentHasTag(FName("LeftRightDodgeZone"))&& bFrontOrBehind)
 			{
 				bInLeftRightDodgeZone = true;
 
